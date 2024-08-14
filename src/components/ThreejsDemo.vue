@@ -1,5 +1,5 @@
 <template>
-    <div ref="containerRef" id="threedPreview" style="width:90vw;height:90vh;position: relative">
+    <div ref="containerRef" id="threedPreview" style="width:100vw;height:100vh;position: relative">
         <canvas ref="canvasRef" style="width: 100%;height: 100%;">
         </canvas>
     </div>
@@ -30,6 +30,7 @@ const render3dModel = () => {
         const renderer = new THREE.WebGLRenderer({ canvas });
         const scene = new THREE.Scene();
         camera.value = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+        camera.value.position.set(100, 100, 100)
         renderer.setSize(container.clientWidth, container.clientHeight)
         //控制器
         var controls = new OrbitControls(camera.value, renderer.domElement);
@@ -38,8 +39,9 @@ const render3dModel = () => {
         const mtlLoader = new MTLLoader();
         const objLoader = new OBJLoader();
         const textureLoader = new THREE.TextureLoader()
-        const mtlUrl = "./model/threed/furniture.mtl"
-        const objUrl = "./model/threed/furniture.obj"
+        const mtlUrl = "./model/threed/demo.mtl"
+        const objUrl = "./model/threed/demo.obj"
+        const imgUrl = "./model/threed/demo.jpg"
         mtlLoader.load(mtlUrl, (materials) => {
             materials.preload();
             objLoader.setMaterials(materials);
@@ -47,29 +49,21 @@ const render3dModel = () => {
                 object.traverse(function (child) {
                     if (child instanceof THREE.Mesh) {
                         //设置模型皮肤
-                        // child.material.map = textureLoader.load(imgUrl);
+                        child.material.map = textureLoader.load(imgUrl);
                     }
                 });
                 var box3 = new THREE.Box3();
                 box3.setFromObject(object); //获取包围盒
                 var size = box3.getSize(new THREE.Vector3());        //获取包围盒的大小，即模型的长宽高
-                const x = (box3.max.x - box3.min.x)
-                const y = (box3.max.y - box3.min.y)
-                const z = (box3.max.z - box3.min.z)
-                const maxDim = Math.max(x, y, z)
-                const num = (maxDim * 0.01).toFixed(2)
-                const scale = num / maxDim
-
-                // object.scale.set(100 / size.x, 100 / size.y * 1.5, 74 / size.z); //见本段注释。换算得到实际大小。
-                object.scale.set(scale, scale, scale);
-                object.position.set(0, 0, 0)
-                // camera.value.position.x = 0;
-                // camera.value.position.y = size.y / 200
-                camera.value.position.z = num
+                console.log(size);
+                
+                object.scale.set(50,50,50); //见本段注释。换算得到实际大小。
+                // object.scale.set(5 / size.x, 5 / size.x, 5 / size.x);
                 scene.add(object);
             });
         });
         scene.add(new THREE.AmbientLight(0xffffff, 3));
+        
         function animate() {
             requestAnimationFrame(animate);
             renderer.render(scene, camera.value);
